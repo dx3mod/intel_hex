@@ -91,3 +91,5 @@ let rec of_channel ic =
   match In_channel.input_line ic with
   | None -> []
   | Some line -> Record.of_string line :: of_channel ic
+
+let of_string s = String.split_on_char '\n' s |> List.map Record.of_string
