@@ -1,0 +1,2 @@
+(library
+ (public_name intel_hex))
