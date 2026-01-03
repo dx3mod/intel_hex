@@ -1,3 +1,5 @@
+(** Raw Intel HEX record representation for fields manipulation. *)
+
 type t = {
   kind : kind;
   length : int;
