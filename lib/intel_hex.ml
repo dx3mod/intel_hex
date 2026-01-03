@@ -41,7 +41,8 @@ module Record = struct
       String.fold_left (Fun.flip @@ Fun.compose ( + ) int_of_char) 0
     in
 
-    (sum_bytes t.payload + t.address + t.length + int_of_kind t.kind) land 0xFF
+    (sum_bytes t.payload + t.address + t.length + int_of_kind t.kind)
+    lxor 0xFF land 0xFF
 
   let of_cstruct cstruct =
     let length = Cstruct.get_byte cstruct 0 in
