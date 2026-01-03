@@ -58,7 +58,10 @@ let of_cstruct cstruct =
   { kind; address; length; payload; checksum }
 
 let of_string line =
-  assert (String.starts_with ~prefix:":" line);
+  if line.[0] <> ':' then
+    raise
+      (Invalid_argument "missing ':' character at the beginning of the record.");
+
   Cstruct.of_hex ~off:1 line |> of_cstruct
 
 let to_cstruct t =
