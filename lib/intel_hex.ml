@@ -37,11 +37,11 @@ module Record = struct
     { record with checksum = calculate_checksum record }
 
   and calculate_checksum t =
-    let sum_bytes =
-      String.fold_left (Fun.flip @@ Fun.compose ( + ) int_of_char) 0
+    let payload_sum_bytes =
+      String.fold_left (Fun.flip @@ Fun.compose ( + ) int_of_char) 0 t.payload
     in
 
-    (sum_bytes t.payload + t.address + t.length + int_of_kind t.kind)
+    (payload_sum_bytes + t.address + t.length + int_of_kind t.kind)
     lxor 0xFF land 0xFF
 
   let of_cstruct cstruct =
@@ -78,10 +78,10 @@ module Record = struct
     Format.pp_print_flush fmt ()
 
   let to_string t =
-    let buffer = Buffer.create 32 in
-    let fmt = Format.formatter_of_buffer buffer in
+    let buf = Buffer.create 32 in
+    let fmt = Format.formatter_of_buffer buf in
     pf fmt t;
-    Buffer.contents buffer
+    Buffer.contents buf
 end
 
 type t = record list
@@ -89,7 +89,20 @@ and record = Record.t
 
 let rec of_channel ic =
   match In_channel.input_line ic with
-  | None -> []
+  | Some "" | None -> []
   | Some line -> Record.of_string line :: of_channel ic
 
 let of_string s = String.split_on_char '\n' s |> List.map Record.of_string
+
+let pf fmt t =
+  List.iter
+    (fun r ->
+      Record.pf fmt r;
+      Format.pp_print_newline fmt ())
+    t
+
+let to_string t =
+  let buf = Buffer.create 1024 in
+  let fmt = Format.formatter_of_buffer buf in
+  pf fmt t;
+  Buffer.contents buf
