@@ -12,11 +12,13 @@ and kind =
   | Extended_segment_address
   | Extended_linear_address
   | Start_linear_address
+  | Start_segment_address
 
 let kind_of_int = function
   | 0 -> Data
   | 1 -> End_of_file
   | 2 -> Extended_segment_address
+  | 3 -> Start_segment_address
   | 4 -> Extended_linear_address
   | 5 -> Start_linear_address
   | _ -> raise (Invalid_argument "unknown Intel HEX record type")
@@ -25,6 +27,7 @@ and int_of_kind = function
   | Data -> 0
   | End_of_file -> 1
   | Extended_segment_address -> 2
+  | Start_segment_address -> 3
   | Extended_linear_address -> 4
   | Start_linear_address -> 5
 
