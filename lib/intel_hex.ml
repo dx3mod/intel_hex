@@ -29,17 +29,19 @@ module Record = struct
     | Extended_linear_address -> 4
     | Start_linear_address -> 5
 
-  let make ~kind ~address payload =
-    let length = String.length payload in
-    let checksum =
-      let sum_bytes =
-        String.fold_left (Fun.flip @@ Fun.compose ( + ) int_of_char) 0
-      in
-
-      (sum_bytes payload + address + length + int_of_kind kind) land 0xFF
+  let rec make ~kind ~address payload =
+    let record =
+      { kind; length = String.length payload; address; checksum = 0; payload }
     in
 
-    { kind; length; address; checksum; payload }
+    { record with checksum = calculate_checksum record }
+
+  and calculate_checksum t =
+    let sum_bytes =
+      String.fold_left (Fun.flip @@ Fun.compose ( + ) int_of_char) 0
+    in
+
+    (sum_bytes t.payload + t.address + t.length + int_of_kind t.kind) land 0xFF
 
   let of_cstruct cstruct =
     let length = Cstruct.get_byte cstruct 0 in
@@ -66,6 +68,8 @@ module Record = struct
     Cstruct.set_uint8 cstruct (4 + payload_length) t.checksum;
 
     cstruct
+
+  let verify t = t.checksum = calculate_checksum t
 
   let pf fmt t =
     Format.pp_print_char fmt ':';
