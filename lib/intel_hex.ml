@@ -4,7 +4,7 @@ module Record = struct
     length : int;
     address : int;
     checksum : int;
-    payload : [ `Hex of string | `Text of string ];
+    payload : string;
   }
 
   and kind =
@@ -29,7 +29,7 @@ module Record = struct
     | Extended_linear_address -> 4
     | Start_linear_address -> 5
 
-  let make ~kind ~address (`Hex payload) =
+  let make ~kind ~address payload =
     let length = String.length payload in
     let checksum =
       let sum_bytes =
@@ -39,7 +39,7 @@ module Record = struct
       (sum_bytes payload + address + length + int_of_kind kind) land 0xFF
     in
 
-    { kind; length; address; checksum; payload = `Hex payload }
+    { kind; length; address; checksum; payload }
 
   let of_cstruct cstruct =
     let length = Cstruct.get_byte cstruct 0 in
@@ -48,9 +48,33 @@ module Record = struct
     let payload = Cstruct.to_string ~off:4 ~len:length cstruct in
     let checksum = Cstruct.get_byte cstruct (4 + length) in
 
-    { kind; address; length; payload = `Text payload; checksum }
+    { kind; address; length; payload; checksum }
 
   let of_string line =
     assert (String.starts_with ~prefix:":" line);
     Cstruct.of_hex ~off:1 line |> of_cstruct
+
+  let to_cstruct t =
+    let payload_length = String.length t.payload in
+
+    let cstruct = Cstruct.create (5 + payload_length) in
+
+    Cstruct.set_uint8 cstruct 0 t.length;
+    Cstruct.BE.set_uint16 cstruct 1 t.address;
+    Cstruct.set_uint8 cstruct 3 (int_of_kind t.kind);
+    Cstruct.blit_from_string t.payload 0 cstruct 4 payload_length;
+    Cstruct.set_uint8 cstruct (4 + payload_length) t.checksum;
+
+    cstruct
+
+  let pf fmt t =
+    Format.pp_print_char fmt ':';
+    Format.pp_print_string fmt @@ Cstruct.to_hex_string @@ to_cstruct t;
+    Format.pp_print_flush fmt ()
+
+  let to_string t =
+    let buffer = Buffer.create 32 in
+    let fmt = Format.formatter_of_buffer buffer in
+    pf fmt t;
+    Buffer.contents buffer
 end
