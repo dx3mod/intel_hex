@@ -74,13 +74,12 @@ let to_cstruct t =
 
 let verify t = t.checksum = calculate_checksum t
 
-let pf fmt t =
-  Format.pp_print_char fmt ':';
-  Format.pp_print_string fmt @@ Cstruct.to_hex_string @@ to_cstruct t;
-  Format.pp_print_flush fmt ()
+let output_to_buffer buf t =
+  Buffer.add_char buf ':';
+  Buffer.add_string buf @@ Cstruct.to_hex_string (to_cstruct t);
+  Buffer.add_char buf '\n'
 
 let to_string t =
   let buf = Buffer.create 32 in
-  let fmt = Format.formatter_of_buffer buf in
-  pf fmt t;
+  output_to_buffer buf t;
   Buffer.contents buf

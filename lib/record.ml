@@ -16,29 +16,6 @@ let to_raw_kind = function
   | Start_linear_address _ -> Raw.Start_linear_address
   | Start_segment_address _ -> Raw.Start_segment_address
 
-let pp fmt = function
-  | Data { offset; payload } ->
-      Format.fprintf fmt "Intel_hex.Record.Data(0x%04x, \"" offset;
-      Format.pp_print_string fmt payload;
-      Format.pp_print_string fmt "\")"
-  | End_of_file -> Format.pp_print_string fmt "Intel_hex.Record.End_of_file"
-  | Extended_segment_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Extended_segment_address(%d)" addr
-  | Extended_linear_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Extended_linear_address(%d)" addr
-  | Start_linear_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Start_linear_address(%ld)" addr
-  | Start_segment_address { cs; ip } ->
-      Format.fprintf fmt
-        "Intel_hex.Record.Start_segment_address(cs: %d, ip: %d)" cs ip
-
-let to_string t =
-  let buf = Buffer.create 32 in
-  let fmt = Format.formatter_of_buffer buf in
-  pp fmt t;
-  Format.pp_print_flush fmt ();
-  Buffer.contents buf
-
 let of_raw raw_record =
   match raw_record.Raw.kind with
   | Raw.Data ->
@@ -74,7 +51,7 @@ let to_raw = function
   | Start_segment_address { cs; ip } ->
       let buf = Bytes.create 4 in
       Bytes.set_uint16_be buf 0 cs;
-      Bytes.set_uint16_be buf 0 ip;
+      Bytes.set_uint16_be buf 2 ip;
 
       Raw.make ~kind:Start_segment_address ~address:0x0000
       @@ Bytes.unsafe_to_string buf
@@ -84,3 +61,26 @@ let to_raw = function
 
       Raw.make ~kind:Start_linear_address ~address:0x0000
       @@ Bytes.unsafe_to_string buf
+
+let pp fmt = function
+  | Data { offset; payload } ->
+      Format.fprintf fmt "Intel_hex.Record.Data(0x%04x, \"" offset;
+      Format.pp_print_string fmt payload;
+      Format.pp_print_string fmt "\")"
+  | End_of_file -> Format.pp_print_string fmt "Intel_hex.Record.End_of_file"
+  | Extended_segment_address addr ->
+      Format.fprintf fmt "Intel_hex.Record.Extended_segment_address(%d)" addr
+  | Extended_linear_address addr ->
+      Format.fprintf fmt "Intel_hex.Record.Extended_linear_address(%d)" addr
+  | Start_linear_address addr ->
+      Format.fprintf fmt "Intel_hex.Record.Start_linear_address(%ld)" addr
+  | Start_segment_address { cs; ip } ->
+      Format.fprintf fmt
+        "Intel_hex.Record.Start_segment_address(cs: %d, ip: %d)" cs ip
+
+let to_string t =
+  let buf = Buffer.create 32 in
+  let fmt = Format.formatter_of_buffer buf in
+  pp fmt t;
+  Format.pp_print_flush fmt ();
+  Buffer.contents buf

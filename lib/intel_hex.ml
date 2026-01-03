@@ -9,17 +9,23 @@ module Raw = struct
     | Some line -> Record.Raw.of_string line :: of_channel ic
 
   let of_string s = String.split_on_char '\n' s |> List.map Record.Raw.of_string
-
-  let pf fmt t =
-    List.iter
-      (fun r ->
-        Record.Raw.pf fmt r;
-        Format.pp_print_newline fmt ())
-      t
+  let output_to_buffer buf t = List.iter (Record.Raw.output_to_buffer buf) t
 
   let to_string t =
     let buf = Buffer.create 1024 in
-    let fmt = Format.formatter_of_buffer buf in
-    pf fmt t;
+    output_to_buffer buf t;
     Buffer.contents buf
 end
+
+type t = Record.t list
+
+let of_channel ic = Raw.of_channel ic |> List.map Record.of_raw
+and of_string s = Raw.of_string s |> List.map Record.of_raw
+
+let output_to_buffer buf t =
+  List.map Record.to_raw t |> Raw.output_to_buffer buf
+
+let to_string t =
+  let buf = Buffer.create 1024 in
+  output_to_buffer buf t;
+  Buffer.contents buf
