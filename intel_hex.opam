@@ -10,6 +10,7 @@ bug-reports: "https://github.com/dx3mod/intel_hex/issues"
 depends: [
   "dune" {>= "3.6"}
   "ocaml"
+  "cstruct"
   "odoc" {with-doc}
 ]
 build: [
