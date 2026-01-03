@@ -82,3 +82,11 @@ module Record = struct
     pf fmt t;
     Buffer.contents buffer
 end
+
+type t = record list
+and record = Record.t
+
+let rec of_channel ic =
+  match In_channel.input_line ic with
+  | None -> []
+  | Some line -> Record.of_string line :: of_channel ic
