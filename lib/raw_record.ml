@@ -42,18 +42,18 @@ let rec make ~kind ~address payload =
 
 and calculate_checksum t =
   let payload_sum_bytes =
-    String.fold_left (Fun.flip @@ Fun.compose ( + ) int_of_char) 0 t.payload
+    String.fold_left (fun sum ch -> int_of_char ch + sum) 0 t.payload
   in
 
   (payload_sum_bytes + t.address + t.length + int_of_kind t.kind)
   lxor 0xFF land 0xFF
 
 let of_cstruct cstruct =
-  let length = Cstruct.get_byte cstruct 0 in
+  let length = Cstruct.get_uint8 cstruct 0 in
   let address = Cstruct.BE.get_uint16 cstruct 1 in
-  let kind = Cstruct.get_byte cstruct 3 |> kind_of_int in
+  let kind = Cstruct.get_uint8 cstruct 3 |> kind_of_int in
   let payload = Cstruct.to_string ~off:4 ~len:length cstruct in
-  let checksum = Cstruct.get_byte cstruct (4 + length) in
+  let checksum = Cstruct.get_uint8 cstruct (4 + length) in
 
   { kind; address; length; payload; checksum }
 

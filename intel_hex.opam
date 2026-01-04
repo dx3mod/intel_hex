@@ -9,8 +9,8 @@ homepage: "https://github.com/dx3mod/intel_hex"
 bug-reports: "https://github.com/dx3mod/intel_hex/issues"
 depends: [
   "dune" {>= "3.6"}
-  "ocaml"
-  "cstruct"
+  "ocaml" {>= "4.14"}
+  "cstruct" {>= "6.2"}
   "odoc" {with-doc}
 ]
 build: [

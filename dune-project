@@ -17,6 +17,10 @@
  (name intel_hex)
  (synopsis "Intel HEX manipulation library")
  ;  (description "A longer description")
- (depends ocaml cstruct)
+ (depends
+  (ocaml
+   (>= 4.14))
+  (cstruct
+   (>= 6.2)))
  (tags
   (embedded hex intelhex)))
