@@ -8,7 +8,12 @@ module Raw = struct
     | Some "" | None -> []
     | Some line -> Record.Raw.of_string line :: of_channel ic
 
-  let of_string s = String.split_on_char '\n' s |> List.map Record.Raw.of_string
+  let of_string s =
+    String.split_on_char '\n' s
+    |> List.filter_map (function
+      | "" -> None
+      | line -> Record.Raw.of_string line |> Option.some)
+
   let output_to_buffer buf t = List.iter (Record.Raw.output_to_buffer buf) t
 
   let to_string t =
