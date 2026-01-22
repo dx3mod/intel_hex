@@ -2,8 +2,6 @@
 
 The Intel HEX manipulation library for OCaml provides functions to read, write, and create Intel HEX format data, which is commonly used in embedded systems programming.
 
-[API references](https://ocaml.org/p/intel_hex/latest/doc/index.html)
-
 ## Usage
 
 If you are using Dune, add the `intel_hex` library to your libraries stanza.
@@ -27,6 +25,8 @@ Also, you can of course read the IHEX object file from other sources:
 ```ocaml
 In_channel.with_open_text "firmware.hex" Intel_hex.of_channel
 ```
+
+For more documentation you should read the [`mli`](./lib/intel_hex.mli) files.
 
 ## References
 
