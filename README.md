@@ -16,6 +16,7 @@ let ihex =
     [
       Data { offset = 0; payload = "hello " };
       Data { offset = 7; payload = "world" };
+      End_of_file
     ]
 
 let () = ihex |> Intel_hex.to_string |> print_endline
