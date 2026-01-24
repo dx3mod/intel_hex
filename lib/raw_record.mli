@@ -21,10 +21,14 @@ val make : kind:kind -> address:int -> string -> t
     calculates a checksum. *)
 
 val of_cstruct : Cstruct.t -> t
-(** [of_cstruct cstruct] decode a raw record type from [cstruct] value. *)
+(** [of_cstruct cstruct] decode a raw record type from [cstruct] value.
+
+    @raise Invalid_argument if [cstruct] is invalid *)
 
 val of_string : string -> t
-(** [of_cstruct string] decode a raw record type from [string] value. *)
+(** [of_cstruct s] decode a raw record type from [s] value.
+
+    @raise Invalid_argument if [s] is invalid *)
 
 (** {1 Convert} *)
 
@@ -43,6 +47,10 @@ val output_to_buffer : Buffer.t -> t -> unit
 (** {1 Internals} *)
 
 val kind_of_int : int -> kind
+(** [kind_of_int x]
+
+    @raise Invalid_argument *)
+
 val int_of_kind : kind -> int
 
 (** {2 Checksum} *)

@@ -22,10 +22,14 @@ type t = Record.t list
 (** {1 Read} *)
 
 val of_channel : in_channel -> t
-(** [of_channel ic] read Intel HEX record from input channel. *)
+(** [of_channel ic] read Intel HEX record from input channel.
+
+    @raise Invalid_argument if [ic] is invalid *)
 
 val of_string : string -> t
-(** [of_string s] read Intel HEX record from [s] string. *)
+(** [of_string s] read Intel HEX record from [s] string.
+
+    @raise Invalid_argument if [s] is invalid *)
 
 (** {1 Write} *)
 
