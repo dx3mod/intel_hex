@@ -1,0 +1,6 @@
+(library
+ (name intel_hex_top)
+ (public_name intel_hex.top)
+ (modes byte)
+ (wrapped false)
+ (libraries compiler-libs.common))
