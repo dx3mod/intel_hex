@@ -10,3 +10,4 @@ and start_segment_address = { cs : int; ip : int }
 
 val make : Chunk.t list -> t
 val of_records : Record.t list -> t
+val normalize : t -> t

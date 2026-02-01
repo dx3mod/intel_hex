@@ -56,3 +56,10 @@ let of_records records =
     start_linear_address = !start_linear_address;
     start_segment_address = !start_segment_address;
   }
+
+let normalize t =
+  let sort_chunks =
+    List.sort (fun (addr, _) (addr', _) -> compare addr addr')
+  in
+
+  { t with chunks = sort_chunks t.chunks }
