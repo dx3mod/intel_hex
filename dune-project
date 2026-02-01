@@ -18,7 +18,8 @@
 (package
  (name intel_hex)
  (synopsis "Intel HEX manipulation library")
- ;  (description "A longer description")
+ (description
+  "The Intel HEX manipulation library for OCaml provides functions to read, write, and create Intel HEX format data, which is commonly used in embedded systems programming.")
  (depends
   (ocaml
    (>= 4.14))
