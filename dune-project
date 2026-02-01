@@ -1,5 +1,7 @@
 (lang dune 3.6)
 
+(version 0.3)
+
 (name intel_hex)
 
 (generate_opam_files true)
