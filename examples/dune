@@ -1,0 +1,3 @@
+(executables
+ (names extract_data_from_file)
+ (libraries intel_hex))
