@@ -14,9 +14,9 @@ Intel_hex.Record.[ Data (0x0000, "Hello "); Data (0x0007, "World!"); End_of_file
 |> print_endline
 ```
 ```
-:0600000048656c6c6f20e6
-:06000700576f726c6421ca
-:00000001ff
+:0600000048656C6C6F20E6
+:06000700576F726C6421CA
+:00000001FF
 ```
 
 Also, you can of course read the IHEX object file from other sources:

@@ -115,8 +115,27 @@ let of_string line =
   Cstruct.of_hex ~off:1 line |> of_cstruct
 
 let to_string t =
-  let buf = Buffer.create 32 in
+  (* Uppercase to HEX string version of Cstruct.to_hex_string function for performance.  *)
+  let output_uppercase_hex_string_to_buffer buf t =
+    let open Cstruct in
+    let[@inline] nibble_to_char (i : int) : char =
+      if i < 10 then Char.chr (i + Char.code '0')
+      else Char.chr (i - 10 + Char.code 'A')
+    in
+
+    for i = 0 to length t - 1 do
+      let ch = Char.code @@ Bigarray.Array1.get t.buffer (i + t.off) in
+
+      Buffer.add_char buf (nibble_to_char (ch lsr 4));
+      Buffer.add_char buf (nibble_to_char (ch land 0xf))
+    done
+  in
+
+  let cstruct = to_cstruct t in
+  let buf = Buffer.create (3 + Cstruct.length cstruct) in
+
   Buffer.add_char buf ':';
-  Buffer.add_string buf @@ Cstruct.to_hex_string (to_cstruct t);
+  output_uppercase_hex_string_to_buffer buf cstruct;
   Buffer.add_char buf '\n';
+
   Buffer.contents buf
