@@ -3,18 +3,19 @@ type t =
   | End_of_file
   | Extended_segment_address of int
   | Extended_linear_address of int
-  | Start_linear_address of int32
+  | Start_linear_address of int
   | Start_segment_address of { cs : int; ip : int }
 
 let pp fmt = function
   | Data chunk -> Format.fprintf fmt "Intel_hex.Record.Data(%a)" Chunk.pp chunk
   | End_of_file -> Format.pp_print_string fmt "Intel_hex.Record.End_of_file"
   | Extended_segment_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Extended_segment_address(%d)" addr
+      Format.fprintf fmt "Intel_hex.Record.Extended_segment_address(0x%04X)"
+        addr
   | Extended_linear_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Extended_linear_address(%d)" addr
+      Format.fprintf fmt "Intel_hex.Record.Extended_linear_address(0x%04X)" addr
   | Start_linear_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Start_linear_address(%ld)" addr
+      Format.fprintf fmt "Intel_hex.Record.Start_linear_address(0x%04X)" addr
   | Start_segment_address { cs; ip } ->
       Format.fprintf fmt
         "Intel_hex.Record.Start_segment_address(cs: %d, ip: %d)" cs ip
@@ -25,14 +26,14 @@ exception Unsupported_record_type of int
 
 let () =
   Printexc.register_printer @@ function
-  | Missing_start_code -> Some "missing start code ':'"
+  | Missing_start_code -> Some "Missing_start_code(':')"
   | Checksum_mismatched (checksum, expected_checksum) ->
       Some
         Printf.(
-          sprintf "invalid checksum '%02x', expecting '%02x'" checksum
+          sprintf "Checksum_mismatched(0x%02X, expecting 0x%02X)" checksum
             expected_checksum)
   | Unsupported_record_type kind ->
-      Some Printf.(sprintf "unsupported IHEX record type '%02x'" kind)
+      Some Printf.(sprintf "Unsupported_record_type(%02x)" kind)
   | _ -> None
 
 let calculate_checksum ~addr ~kind ~payload =
@@ -73,7 +74,7 @@ let to_cstruct = function
       make_raw_record ~kind:3 (Bytes.unsafe_to_string buf)
   | Start_linear_address linear_addr ->
       let buf = Bytes.create 4 in
-      Bytes.set_int32_be buf 0 linear_addr;
+      Bytes.set_int32_be buf 0 (Int32.of_int linear_addr);
       make_raw_record ~kind:5 (Bytes.unsafe_to_string buf)
 
 let of_cstruct cstruct =
@@ -96,8 +97,7 @@ let of_cstruct cstruct =
   | 0x01 -> End_of_file
   | 0x02 -> Extended_segment_address String.(get_uint16_be payload 0)
   | 0x04 -> Extended_linear_address String.(get_uint16_be payload 0)
-  | 0x05 ->
-      Start_linear_address String.(get_uint16_be payload 0 |> Int32.of_int)
+  | 0x05 -> Start_linear_address String.(get_int32_be payload 0 |> Int32.to_int)
   | 0x03 ->
       Start_segment_address
         {

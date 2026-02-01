@@ -13,6 +13,7 @@ let records_to_channel records oc =
 
 let records_of_string s =
   String.split_on_char '\n' s
+  |> List.map String.trim
   |> List.filter_map (function
     | "" -> None
     | line -> Record.of_string line |> Option.some)

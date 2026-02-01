@@ -5,7 +5,7 @@ type t =
   | End_of_file
   | Extended_segment_address of int
   | Extended_linear_address of int
-  | Start_linear_address of int32
+  | Start_linear_address of int
   | Start_segment_address of { cs : int; ip : int }
 
 val pp : Format.formatter -> t -> unit
@@ -29,6 +29,7 @@ val of_cstruct_opt : Cstruct.t -> t option
 val of_string : string -> t
 (** [of_string s] decode a record from string source.
 
+    @raise Invalid_argument if [s] is invalid
     @raise Missing_start_code
     @raise Checksum_mismatched
     @raise Unsupported_record_type *)

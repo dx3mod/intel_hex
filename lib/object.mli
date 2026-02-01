@@ -1,7 +1,7 @@
 (** Module for representing IHEX objects for payload (data) manipulation. *)
 
 type t = {
-  start_linear_address : int32;
+  start_linear_address : int;
   start_segment_address : start_segment_address;
   chunks : Chunk.t list;
 }

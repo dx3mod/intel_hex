@@ -24,6 +24,7 @@
   (ocaml
    (>= 4.14))
   (cstruct
-   (>= 6.2)))
+   (>= 6.2))
+  (alcotest :with-test))
  (tags
   (embedded hex intelhex)))
