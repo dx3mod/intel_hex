@@ -42,9 +42,12 @@ In_channel.with_open_text "data.hex" Intel_hex.object_of_channel
 
 For more documentation you should read the [`mli`](./lib/intel_hex.mli) files.
 
-> [!WARNING] 
+> [!WARNING]
 > #### Limitations
-> To represent 32-bit integers, the library uses the OCaml `int` data type. This may be problematic for 32-bit systems, as it can lead to overflow errors, but it works fine for most 64-bit systems.
+> 
+> 32-bitness. To represent 32-bit integers, the library uses the OCaml `int` data type. This may be problematic for 32-bit systems, as it can lead to overflow errors, but it works fine for most 64-bit systems.
+> 
+> Start addressing and extending addressing. Not fully supported for real-world use. I would appreciate your pull request on this!
 
 ## References
 
