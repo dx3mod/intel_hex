@@ -32,13 +32,19 @@ Also, you can of course read the IHEX object file from other sources:
 In_channel.with_open_text "data.hex" Intel_hex.object_of_channel
 ```
 ```ocaml
-- : Intel_hex.Object.t =
-{Intel_hex.Object.start_linear_address = 0;
- start_segment_address = {Intel_hex.Object.cs = 0; ip = 0};
- chunks = [(240, "Hello "); (247, "World!")]}
+- : Intel_hex.Object.t = 
+{ 
+  start_linear_address = 0;
+  start_segment_address = {cs = 0; ip = 0};
+  chunks = [(240, "Hello "); (247, "World!")]
+}
 ```
 
 For more documentation you should read the [`mli`](./lib/intel_hex.mli) files.
+
+> [!WARNING] 
+> #### Limitations
+> To represent 32-bit integers, the library uses the OCaml `int` data type. This may be problematic for 32-bit systems, as it can lead to overflow errors, but it works fine for most 64-bit systems.
 
 ## References
 
