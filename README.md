@@ -1,3 +1,5 @@
+<img src="https://i.ibb.co/d0pfQWLS/intelhexloho-001.png" width="60" />
+
 # intel_hex
 
 The Intel HEX manipulation library for OCaml provides functions to read, write, and create Intel HEX format data, which is commonly used in embedded systems programming.
