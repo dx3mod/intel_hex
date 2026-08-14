@@ -1,8 +1,8 @@
 (lang dune 3.6)
 
-(version 0.3)
-
 (name intel_hex)
+
+(version 0.4)
 
 (generate_opam_files true)
 
@@ -19,12 +19,11 @@
  (name intel_hex)
  (synopsis "Intel HEX manipulation library")
  (description
-  "The Intel HEX manipulation library for OCaml provides functions to read, write, and create Intel HEX format data, which is commonly used in embedded systems programming.")
+  "A Intel HEX manipulation library for parsing and generating Intel HEX (also known as IHEX) objects")
  (depends
   (ocaml
    (>= 4.14))
-  (cstruct
-   (>= 6.2))
+  ohex
   (alcotest :with-test))
  (tags
-  (embedded hex intelhex)))
+  (ihex intelhex embedded bytes hex)))

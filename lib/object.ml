@@ -1,65 +1,53 @@
-type t = {
-  start_linear_address : int;
-  start_segment_address : start_segment_address;
-  chunks : Chunk.t list;
-}
+type t = Record.t list
 
-and start_segment_address = { cs : int; ip : int }
+let pp ppf records =
+  Format.fprintf ppf "@[<hv 1>[%a]@]"
+    (Format.pp_print_list
+       ~pp_sep:(fun out () -> Format.fprintf out ";@ ")
+       Record.pp)
+    records
 
-let make chunks =
-  {
-    start_linear_address = 0;
-    start_segment_address = { cs = 0; ip = 0 };
-    chunks;
-  }
+let into_blob ~write records =
+  let upper_linear_base_address = ref 0 and linear_address_offset = ref 0 in
 
-let of_records records =
-  let extended_linear_address = ref 0 and extended_segment_address = ref 0 in
-  let start_linear_address = ref 0
-  and start_segment_address = ref { cs = 0; ip = 0 } in
-
-  let addr_space = ref `Linear in
-  let eof = ref false in
-
-  let chunks =
-    List.filter_map
-      (function
-        | _ when !eof -> None
-        | Record.Data (addr, data) when !addr_space = `Linear ->
-            let addr = (!extended_linear_address lsl 16) lor addr in
-            Some (addr, data)
-        | Record.Data (addr, data) when !addr_space = `Segment ->
-            let addr = (!extended_segment_address lsl 4) lor addr in
-            Some (addr, data)
-        | Extended_linear_address linear_addr ->
-            extended_linear_address := linear_addr;
-            None
-        | Extended_segment_address seg_addr ->
-            extended_segment_address := seg_addr;
-            addr_space := `Segment;
-            None
-        | Start_linear_address linear_addr ->
-            start_linear_address := linear_addr;
-            None
-        | Start_segment_address { cs; ip } ->
-            start_segment_address := { cs; ip };
-            None
-        | End_of_file ->
-            eof := true;
-            None
-        | _ -> None)
-      records
+  let aux = function
+    | Record.Data (address, payload) ->
+        let address = (!upper_linear_base_address lsl 16) lor address in
+        write address payload
+    | Record.Extended_linear_address lba -> upper_linear_base_address := lba
+    | Record.Start_linear_address lao -> linear_address_offset := lao
+    | Record.End_of_file ->
+        (* Control flow *)
+        raise_notrace End_of_file
+    | _ -> (* ignored *) ()
   in
 
-  {
-    chunks;
-    start_linear_address = !start_linear_address;
-    start_segment_address = !start_segment_address;
-  }
+  try List.iter aux records with End_of_file -> ()
 
-let normalize t =
-  let sort_chunks =
-    List.sort (fun (addr, _) (addr', _) -> compare addr addr')
+let from_blob ?(address = 0) ~read () =
+  let rec aux address =
+    match read () with
+    | None -> [ Record.End_of_file ]
+    | Some payload ->
+        Record.Data (address, payload) :: aux (address + String.length payload)
   in
 
-  { t with chunks = sort_chunks t.chunks }
+  if address > 0xFFFF then
+    Record.Extended_linear_address (address lsr 16) :: aux (address land 0xFFFF)
+  else aux address
+
+let from_string ?address ?(block_size = 16) string =
+  let length = ref @@ String.length string and offset = ref 0 in
+
+  let read () =
+    if !length > 0 then (
+      let payload = String.sub string !offset (min block_size !length) in
+
+      length := !length - block_size;
+      offset := !offset + block_size;
+
+      Some payload)
+    else None
+  in
+
+  from_blob ?address ~read ()

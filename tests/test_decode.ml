@@ -1,36 +1,34 @@
 open Alcotest
 
 let test_record_from_record_string_rejects_missing_start_code () =
-  check_raises "00000001FF" Intel_hex.Record.Missing_start_code (fun () ->
-      Intel_hex.Record.of_string "00000001FF" |> ignore)
+  check_raises "00000001FF"
+    Intel_hex.Decode.(Error Missing_start_code)
+    (fun () -> Intel_hex.Decode.from_string "00000001FF" |> ignore)
 
 let test_record_from_record_string_rejects_non_hex_characters () =
-  check_raises ":000000q1ff"
-    (Invalid_argument "of_hex: invalid character at pos 6: 'q'") (fun () ->
-      Intel_hex.Record.of_string ":000000q1ff" |> ignore)
+  check_raises ":000000q1ff" (Invalid_argument "bad character") (fun () ->
+      Intel_hex.Decode.from_string ":000000q1ff" |> ignore)
 
 let test_record_from_record_string_rejects_invalid_checksums () =
   check_raises ":0B0010006164647265737320676170FF"
-    Intel_hex.Record.(Checksum_mismatched (0xA7, 0xFF))
+    Intel_hex.Decode.(Error (Checksum_mismatched (0xFF, 0xA7)))
     (fun () ->
-      Intel_hex.Record.of_string ":0B0010006164647265737320676170FF" |> ignore);
+      Intel_hex.Decode.from_string ":0B0010006164647265737320676170FF" |> ignore);
 
   check_raises ":020000021200EB"
-    Intel_hex.Record.(Checksum_mismatched (0xEA, 0xEB))
-    (fun () -> Intel_hex.Record.of_string ":020000021200EB" |> ignore)
+    Intel_hex.Decode.(Error (Checksum_mismatched (0xEB, 0xEA)))
+    (fun () -> Intel_hex.Decode.from_string ":020000021200EB" |> ignore)
 
 let intel_hex_record = testable Intel_hex.Record.pp ( = )
 
 let test_reader_processes_well_formed_ihex_object () =
   let ihex_text =
-    {|
-      :0B0010006164647265737320676170A7
-      :020000021200EA
-      :0400000300003800C1
-      :02000004FFFFFC
-      :04000005000000CD2A
-      :00000001FF
-    |}
+    ":0B0010006164647265737320676170A7\n\
+     :020000021200EA\n\
+     :0400000300003800C1\n\
+     :02000004FFFFFC\n\
+     :04000005000000CD2A\n\
+     :00000001FF"
   in
 
   let expected =
@@ -46,7 +44,7 @@ let test_reader_processes_well_formed_ihex_object () =
   in
 
   check (list intel_hex_record) "IHEX object" expected
-    (Intel_hex.records_of_string ihex_text)
+    (Intel_hex.Decode.from_string ihex_text)
 
 let () =
   run "Decode"

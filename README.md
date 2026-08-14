@@ -1,57 +1,75 @@
-<img src="https://i.ibb.co/d0pfQWLS/intelhexloho-001.png" width="60" />
+# <img src="https://i.ibb.co/kvh7P4p/lastihexlohgo-001.png" width="50" />  Intel_hex  
 
-# intel_hex
+A Intel HEX manipulation library for parsing and generating Intel HEX (also known as IHEX) objects. This format is commonly used to represent compiled program code and data that is loaded into a microcontroller, flash memory, or ROM in embedded systems programming.
 
-The Intel HEX manipulation library for OCaml provides functions to read, write, and create Intel HEX format data, which is commonly used in embedded systems programming.
 
-## Usage
+## Quick start
 
-If you are using Dune, add the `intel_hex` library to your libraries stanza.
+You can install the `intel_hex` library using the [OPAM] package manager or any other method you prefer.
 
-Here is an example that creates an IHEX object file with test data and then prints it:
+```console
+$ opam install intel_hex
+```
 
+You can also get the latest version of the upstream (developer) branch.
+```console
+$ opam pin intel_hex.dev https://github.com/dx3mod/intel_hex.git
+```
+
+If you are using [Dune], please add the `intel_hex` library to your dependencies.
+
+### In use
+
+Here is an example of how to create an Intel HEX file with test data and print it:
 ```ocaml
 Intel_hex.Record.
-  [
-      Extended_segment_address 0x0F;
-      Data (0x0000, "Hello ");
-      Data (0x0007, "World!");
-      End_of_file;
-  ]
-|> Intel_hex.records_to_string 
+[
+  Extended_linear_address 0x0F;
+  Data (0x0000, "Hello ");
+  Data (0x0007, "World!");
+  End_of_file;
+]
+|> Intel_hex.Encode.into_string 
 |> print_endline
 ```
 ```
-:02000002000FED
+:02000004000FEB
 :0600000048656C6C6F20E6
 :06000700576F726C6421CA
 :00000001FF
 ```
 
-Also, you can of course read the IHEX object file from other sources:
+Also, you can read Intel HEX objects from any source, of course.
 
 ```ocaml
-In_channel.with_open_text "data.hex" Intel_hex.object_of_channel
+In_channel.with_open_text "data.hex" Intel_hex.Decode.from_channel
 ```
 ```ocaml
-- : Intel_hex.Object.t = 
-{ 
-  start_linear_address = 0;
-  start_segment_address = {cs = 0; ip = 0};
-  chunks = [(240, "Hello "); (247, "World!")]
-}
+- : Intel_hex.Object.t =
+[Intel_hex.Record.Extended_linear_address(0x000F);
+ Intel_hex.Record.Data(0x0000, "Hello ");
+ Intel_hex.Record.Data(0x0007, "World!");
+ Intel_hex.Record.End_of_file]
 ```
 
-For more documentation you should read the [`mli`](./lib/intel_hex.mli) files.
-
-> [!WARNING]
-> #### Limitations
-> 
-> 32-bitness. To represent 32-bit integers, the library uses the OCaml `int` data type. This may be problematic for 32-bit systems, as it can lead to overflow errors, but it works fine for most 64-bit systems.
-> 
-> Start addressing and extending addressing. Not fully supported for real-world use. I would appreciate your pull request on this!
+For more details, see [API references](https://ocaml.org/p/intel_hex/latest/doc/index.html) and [`examples/`](./examples/) directory.
 
 ## References
 
+Format description
+
+- <https://en.wikipedia.org/wiki/Intel_HEX>
+- <https://www.tasking.com/documentation/smartcode/ctc/reference/objfmt_hex.html>
+
+Reference implementations
 - [martinmroz/ihex](https://github.com/martinmroz/ihex)
-- [unixdj/ihex](https://pkg.go.dev/github.com/unixdj/ihex)
+- [unixdj/ihex](https://pkg.go.dev/github.com/unixdj/ihex) 
+
+
+## License
+
+The project is licensed under [the MIT License](./LICENSE), which allows for all permissions.
+Just use it and enjoy yourself without fear. We are always open to pull requests!
+
+[OPAM]: https://opam.ocaml.org/
+[Dune]: https://dune.build

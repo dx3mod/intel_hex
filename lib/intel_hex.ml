@@ -1,27 +1,20 @@
-module Record = Record
 module Object = Object
+module Record = Record
 
-let records_to_string records =
-  let buf = Buffer.create 4024 in
-  List.iter (fun r -> Record.to_string r |> Buffer.add_string buf) records;
-  Buffer.contents buf
+module Decode = struct
+  include Decoder
 
-let records_to_channel records oc =
-  List.iter
-    (fun r -> Record.to_string r |> Out_channel.output_string oc)
-    records
+  let from_string s = decode_object_from_string_exn s
+  and record_from_string line = decode_record_line_exn line
 
-let records_of_string s =
-  String.split_on_char '\n' s
-  |> List.map String.trim
-  |> List.filter_map (function
-    | "" -> None
-    | line -> Record.of_string line |> Option.some)
+  let from_channel ic = decode_object_from_channel_exn ic
+end
 
-let rec records_of_channel ic =
-  match In_channel.input_line ic with
-  | Some "" | None -> []
-  | Some line -> Record.of_string line :: records_of_channel ic
+module Encode = struct
+  include Encoder
 
-let object_of_string s = records_of_string s |> Object.of_records
-and object_of_channel ic = records_of_channel ic |> Object.of_records
+  let into_string ihex_obj = encode_to_string ihex_obj
+  and record_into_string record = encode_record_to_string record
+
+  let into_channel oc ihex_obj = encode_into_channel oc ihex_obj
+end

@@ -1,44 +1,20 @@
-(** Line record of IHEX object. *)
+(** Intel HEX record's module.
 
+    The module contains Intel HEX record type and function to process it. *)
+
+(** Intel HEX record type. *)
 type t =
-  | Data of Chunk.t
+  | Data of (int * string)  (** Address and payload *)
   | End_of_file
   | Extended_segment_address of int
   | Extended_linear_address of int
   | Start_linear_address of int
   | Start_segment_address of { cs : int; ip : int }
 
+val is_eof : t -> bool
+(** [is_eof record] returns [true] if [record] is [End_of_file] variant else
+    returns [false]. *)
+
 val pp : Format.formatter -> t -> unit
-(** [pp fmt record] *)
-
-(** {2 Decode} *)
-
-val to_cstruct : t -> Cstruct.t
-val to_string : t -> string
-
-(** {2 Encode} *)
-
-val of_cstruct : Cstruct.t -> t
-(** [of_cstruct cstruct] decode a record from cstruct buffer.
-
-    @raise Checksum_mismatched
-    @raise Unsupported_record_type *)
-
-val of_cstruct_opt : Cstruct.t -> t option
-
-val of_string : string -> t
-(** [of_string s] decode a record from string source.
-
-    @raise Invalid_argument if [s] is invalid
-    @raise Missing_start_code
-    @raise Checksum_mismatched
-    @raise Unsupported_record_type *)
-
-(** {2 Exceptions} *)
-
-exception Missing_start_code
-
-exception Checksum_mismatched of int * int
-(** [(checksum, expected_checksum)] *)
-
-exception Unsupported_record_type of int
+[@@ocaml.toplevel_printer]
+(** [pp ppf record] pretty print the [record] value into [ppf] format object. *)
