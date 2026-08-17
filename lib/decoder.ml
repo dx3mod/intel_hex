@@ -26,12 +26,11 @@ let decode_record_line_exn line =
   (* Verify checksum *)
   let checksum = String.get_uint8 bytes (4 + length)
   and expected_checksum =
-    let summa =
-      length + String.get_uint8 bytes 1 + String.get_uint8 bytes 2 + kind
-      + String.fold_left (fun acc x -> int_of_char x + acc) 0 payload
+    let payload_sum_bytes =
+      String.fold_left (fun sum ch -> int_of_char ch + sum) 0 payload
     in
 
-    (256 - (summa land 0xff)) land 0xff
+    -(payload_sum_bytes + address + String.length payload + kind) land 0xFF
   in
 
   if checksum <> expected_checksum then
