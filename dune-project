@@ -2,7 +2,7 @@
 
 (name intel_hex)
 
-(version 0.4.1)
+(version 0.5)
 
 (generate_opam_files true)
 
@@ -19,7 +19,7 @@
  (name intel_hex)
  (synopsis "Intel HEX manipulation library")
  (description
-  "A Intel HEX manipulation library for parsing and generating Intel HEX (also known as IHEX) objects")
+  "A library for parsing and generating Intel HEX (also known as IHEX) objects")
  (depends
   (ocaml
    (>= 4.14))

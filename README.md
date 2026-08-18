@@ -1,6 +1,6 @@
 # <img src="https://i.ibb.co/kvh7P4p/lastihexlohgo-001.png" width="50" />  Intel_hex  
 
-A Intel HEX manipulation library for parsing and generating Intel HEX (also known as IHEX) objects. This format is commonly used to represent compiled program code and data that is loaded into a microcontroller, flash memory, or ROM in embedded systems programming.
+A library for parsing and generating Intel HEX (also known as IHEX) objects. This format is commonly used to represent compiled program code and data that is loaded into a microcontroller, flash memory, or ROM in embedded systems programming.
 
 
 ## Quick start
