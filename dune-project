@@ -2,7 +2,7 @@
 
 (name intel_hex)
 
-(version 0.5)
+(version 1.0)
 
 (generate_opam_files true)
 
