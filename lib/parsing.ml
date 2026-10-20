@@ -1,20 +1,22 @@
-type error =
-  | Missing_start_code
-  | Checksum_mismatched of (int * int)
-  | Illegal_record_type of int
+module Error = struct
+  type t =
+    | Missing_start_code
+    | Invalid_hexadecimal
+    | Checksum_mismatched of (int * int)
+    | Illegal_record_type of int
+    | Too_small
 
-exception Error of error
+  exception Error of t
+end
 
-let raise_error err = raise (Error err)
+let raise_error err = raise (Error.Error err)
 
-let decode_record_line_exn line =
+let parse_record line =
   if line.[0] <> ':' then raise_error Missing_start_code;
 
   let bytes =
-    Ohex.decode
-    @@
-    (* NOTE: performance issue! *)
-    String.sub line 1 String.(length line - 1)
+    try Hexen.decode_substring line 1 (String.length line - 1)
+    with Invalid_argument _ -> raise_notrace (Error.Error Invalid_hexadecimal)
   in
 
   (* Get fields from cstruct buffer *)
@@ -53,11 +55,18 @@ let decode_record_line_exn line =
         }
   | _ -> raise_error @@ Illegal_record_type kind
 
-let decode_object_from_string_exn string =
-  String.split_on_char '\n' string |> List.map decode_record_line_exn
+let rec parse_object_stream ~pull () =
+  match pull () with
+  | None -> []
+  | Some line ->
+      let line = String.trim line in
 
-let[@tail_mod_cons] rec decode_object_from_channel_exn ic =
-  match input_line ic |> decode_record_line_exn with
-  | exception End_of_file -> []
-  | Record.End_of_file as record -> [ record ]
-  | record -> record :: decode_object_from_channel_exn ic
+      if String.is_empty line then parse_object_stream ~pull ()
+      else parse_record line :: parse_object_stream ~pull ()
+
+let parse_object source =
+  String.split_on_char '\n' source |> List.map parse_record
+
+let parse_object_file ic =
+  let pull () = In_channel.input_line ic in
+  parse_object_stream ~pull ()

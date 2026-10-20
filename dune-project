@@ -2,8 +2,6 @@
 
 (name intel_hex)
 
-(version 1.0)
-
 (generate_opam_files true)
 
 (source
@@ -22,8 +20,8 @@
   "A library for parsing and generating Intel HEX (also known as IHEX) objects")
  (depends
   (ocaml
-   (>= 4.14))
-  ohex
+   (>= 5.5))
+  hexen
   (alcotest :with-test))
  (tags
   (ihex intelhex embedded bytes hex)))

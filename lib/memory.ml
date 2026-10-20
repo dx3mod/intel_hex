@@ -47,7 +47,7 @@ let of_object records =
           match extended_address with
           | None -> address
           | Some (`Linear_address la) -> (la lsl 16) lor address
-          | Some (`Segment_address sa) -> (sa lsl 4) lor address
+          | Some (`Segment_address sa) -> (sa lsl 4) + address
         in
 
         loop
@@ -71,6 +71,40 @@ let of_object records =
   in
 
   loop Segments.empty None None records
+
+let to_object memory =
+  let records = Dynarray.create () in
+  let extended_address = ref 0 in
+
+  begin match memory.execution_start_address with
+  | None -> ()
+  | Some (`Linear_address address) ->
+      Dynarray.add_last records (Record.Start_linear_address address)
+  | Some (`Segment_address (~cs, ~ip)) ->
+      Dynarray.add_last records (Record.Start_segment_address { cs; ip })
+  end;
+
+  Segments.iter
+    begin fun (address, contents) ->
+      let address =
+        if address > 0xFFFF then (
+          let extended_address' = address lsr 16 in
+
+          if !extended_address <> extended_address' then begin
+            extended_address := extended_address';
+            Dynarray.add_last records
+              Record.(Extended_linear_address extended_address')
+          end;
+
+          address land 0xFFFF)
+        else address
+      in
+
+      Dynarray.add_last records Record.(Data (address, contents))
+    end
+    memory.segments;
+
+  Dynarray.to_list records
 
 let of_string ?(block_size = 16) source =
   let rec slicing segments remaining_source_length source_offset source =

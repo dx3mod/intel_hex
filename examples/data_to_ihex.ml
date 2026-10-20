@@ -1,4 +1,4 @@
-module Cli = struct
+(* module Cli = struct
   let input_file = ref ""
   and output_file = ref ""
 
@@ -20,4 +20,4 @@ let () =
   in
 
   Out_channel.with_open_text !Cli.output_file @@ fun oc ->
-  Intel_hex.Encode.into_channel oc ihex_obj
+  Intel_hex.Encode.into_channel oc ihex_obj *)
