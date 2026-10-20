@@ -24,17 +24,18 @@ let to_string records =
 let of_string source =
   String.split_on_char '\n' source
   |> List.filter_map @@ fun line ->
-     let line = String.trim line in
-     if String.is_empty line then None else Some (Record.of_string line)
+     match String.trim line with
+     | "" -> None
+     | line -> Some (Record.of_string line)
 
 let rec of_channel ic =
   match In_channel.input_line ic with
   | None -> []
   | Some line ->
-      let line = String.trim line in
-
-      if String.is_empty line then Record.of_string line :: of_channel ic
-      else of_channel ic
+      begin match String.trim line with
+      | "" -> of_channel ic
+      | line -> Record.of_string line :: of_channel ic
+      end
 
 let to_channel records oc =
   List.iter

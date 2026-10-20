@@ -20,7 +20,7 @@
   "A library for parsing and generating Intel HEX (also known as IHEX) objects")
  (depends
   (ocaml
-   (>= 5.5))
+   (>= 5.2))
   hexen
   (alcotest :with-test))
  (tags

@@ -11,7 +11,7 @@ homepage: "https://github.com/dx3mod/intel_hex"
 bug-reports: "https://github.com/dx3mod/intel_hex/issues"
 depends: [
   "dune" {>= "3.6"}
-  "ocaml" {>= "5.5"}
+  "ocaml" {>= "5.2"}
   "hexen"
   "alcotest" {with-test}
   "odoc" {with-doc}

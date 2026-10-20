@@ -40,5 +40,6 @@ val output_to_buffer : t -> Buffer.t -> unit
 val is_eof : t -> bool
 (** [is_eof record] checks the [record] on [End_of_file] variant. *)
 
-val pp : Format.formatter -> t -> unit [@@ocaml.toplevel_printer]
+val pp : Format.formatter -> t -> unit
+[@@ocaml.toplevel_printer]
 (** [pp ppf record] pretty print the [record] into the [ppf] formatter. *)
