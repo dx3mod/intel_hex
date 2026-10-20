@@ -15,7 +15,7 @@
 
 (package
  (name intel_hex)
- (synopsis "Intel HEX manipulation library")
+ (synopsis "Intel HEX parsing and manipulation library")
  (description
   "A library for parsing and generating Intel HEX (also known as IHEX) objects")
  (depends

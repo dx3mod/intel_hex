@@ -44,7 +44,7 @@ let test_reader_processes_well_formed_ihex_object () =
         Extended_segment_address 0x1200;
         Start_segment_address { cs = 0; ip = 0x3800 };
         Extended_linear_address 0xFFFF;
-        Start_linear_address 0x000000CD;
+        Start_linear_address { eip = 0x000000CD };
         End_of_file;
       ]
   in

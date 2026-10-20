@@ -11,10 +11,13 @@ end
 module Segments = Set.Make (Segment)
 
 type t = {
-  execution_start_address :
-    [ `Linear_address of int | `Segment_address of cs:int * ip:int ] option;
+  execution_start_address : execution_start_address option;
   segments : Segments.t;
 }
+
+and execution_start_address =
+  | Linear_address of { eip : int }
+  | Segment_address of { cs : int; ip : int }
 
 let make ?execution_start_address ?(segments = Segments.empty) () =
   { execution_start_address; segments }
@@ -56,11 +59,11 @@ let of_object records =
     | Record.(Start_linear_address _ | Start_segment_address _) :: _
       when Option.is_some start_address ->
         raise Multiply_execution_start_address
-    | Record.Start_linear_address address :: records ->
-        loop segments extended_address (Some (`Linear_address address)) records
+    | Record.Start_linear_address { eip } :: records ->
+        loop segments extended_address (Some (Linear_address { eip })) records
     | Record.Start_segment_address { cs; ip } :: records ->
         loop segments extended_address
-          (Some (`Segment_address (~cs, ~ip)))
+          (Some (Segment_address { cs; ip }))
           records
     | Record.Extended_linear_address address :: records ->
         loop segments (Some (`Linear_address address)) start_address records
@@ -78,9 +81,9 @@ let to_object memory =
 
   begin match memory.execution_start_address with
   | None -> ()
-  | Some (`Linear_address address) ->
-      Dynarray.add_last records (Record.Start_linear_address address)
-  | Some (`Segment_address (~cs, ~ip)) ->
+  | Some (Linear_address { eip }) ->
+      Dynarray.add_last records (Record.Start_linear_address { eip })
+  | Some (Segment_address { cs; ip }) ->
       Dynarray.add_last records (Record.Start_segment_address { cs; ip })
   end;
 

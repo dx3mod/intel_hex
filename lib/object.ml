@@ -7,8 +7,14 @@ let pp ppf records =
        Record.pp)
     records
 
-let output_to_buffer records buffer =
-  List.iter (fun record -> Record.output_to_buffer record buffer) records
+let rec output_to_buffer records buffer =
+  match records with
+  | [] -> ()
+  | record :: [] -> Record.output_to_buffer record buffer
+  | record :: records ->
+      Record.output_to_buffer record buffer;
+      Buffer.add_char buffer '\n';
+      output_to_buffer records buffer
 
 let to_string records =
   let buffer = Buffer.create 0xff in

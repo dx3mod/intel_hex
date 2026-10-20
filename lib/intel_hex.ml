@@ -1,7 +1,8 @@
-(** Intel HEX file format manipulation and parsing library.
+(** Intel HEX parsing and manipulation library.
 
-    This library provides utilities for encoding, decoding, representing, and
-    managing Intel HEX object files, records, and segmented memory images. *)
+    This format is commonly used to represent compiled program code and data
+    that is loaded into a microcontroller, flash memory, or ROM in embedded
+    systems programming. *)
 
 module Record = Record
 module Object = Object

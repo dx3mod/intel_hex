@@ -3,7 +3,7 @@ type t =
   | End_of_file
   | Extended_segment_address of int
   | Extended_linear_address of int
-  | Start_linear_address of int
+  | Start_linear_address of { eip : int }
   | Start_segment_address of { cs : int; ip : int }
 
 let is_eof = function End_of_file -> true | _ -> false
@@ -17,8 +17,8 @@ let pp fmt = function
         addr
   | Extended_linear_address addr ->
       Format.fprintf fmt "Intel_hex.Record.Extended_linear_address(0x%04X)" addr
-  | Start_linear_address addr ->
-      Format.fprintf fmt "Intel_hex.Record.Start_linear_address(0x%04X)" addr
+  | Start_linear_address { eip } ->
+      Format.fprintf fmt "Intel_hex.Record.Start_linear_address(0x%04X)" eip
   | Start_segment_address { cs; ip } ->
       Format.fprintf fmt
         "Intel_hex.Record.Start_segment_address(cs: %d, ip: %d)" cs ip
@@ -51,8 +51,7 @@ module Raw = struct
     Bytes.set_uint8 bytes String.(length payload + 4) checksum;
 
     Buffer.add_char buffer ':';
-    Hexen.encode_to_buffer ~uppercase:true (Bytes.unsafe_to_string bytes) buffer;
-    Buffer.add_char buffer '\n'
+    Hexen.encode_to_buffer ~uppercase:true (Bytes.unsafe_to_string bytes) buffer
 
   let of_string line =
     if line.[0] <> ':' then invalid_arg "intel_hex: missing record's start code";
@@ -108,9 +107,9 @@ let to_raw record =
       Bytes.set_uint16_be buf 2 ip;
 
       Raw.make ~kind:0x03 ~address:0 (Bytes.unsafe_to_string buf)
-  | Start_linear_address linear_address ->
+  | Start_linear_address { eip } ->
       let buf = Bytes.create 4 in
-      Bytes.set_int32_be buf 0 (Int32.of_int linear_address);
+      Bytes.set_int32_be buf 0 (Int32.of_int eip);
 
       Raw.make ~kind:0x05 ~address:0 (Bytes.unsafe_to_string buf)
 
@@ -129,7 +128,9 @@ let of_string line =
   | 0x01 -> End_of_file
   | 0x02 -> Extended_segment_address String.(get_uint16_be payload 0)
   | 0x04 -> Extended_linear_address String.(get_uint16_be payload 0)
-  | 0x05 -> Start_linear_address String.(get_int32_be payload 0 |> Int32.to_int)
+  | 0x05 ->
+      Start_linear_address
+        { eip = String.(get_int32_be payload 0 |> Int32.to_int) }
   | 0x03 ->
       Start_segment_address
         {
