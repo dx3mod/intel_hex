@@ -53,6 +53,39 @@ module Raw = struct
     Buffer.add_char buffer ':';
     Hexen.encode_to_buffer ~uppercase:true (Bytes.unsafe_to_string bytes) buffer;
     Buffer.add_char buffer '\n'
+
+  let of_string line =
+    if line.[0] <> ':' then invalid_arg "intel_hex: missing record's start code";
+
+    let bytes =
+      try Hexen.decode_substring line 1 (String.length line - 1)
+      with Invalid_argument _ ->
+        invalid_arg "intel_hex: invalid hexadecimal record's body"
+    in
+
+    (* Get fields from cstruct buffer *)
+    let length = String.get_uint8 bytes 0 in
+    let address = String.get_uint16_be bytes 1 in
+    let kind = String.get_uint8 bytes 3 in
+    let payload = String.sub bytes 4 length in
+
+    (* Verify checksum *)
+    let checksum = String.get_uint8 bytes (4 + length)
+    and expected_checksum =
+      let payload_sum_bytes =
+        String.fold_left (fun sum ch -> int_of_char ch + sum) 0 payload
+      in
+
+      -(payload_sum_bytes + address + String.length payload + kind) land 0xFF
+    in
+
+    if checksum <> expected_checksum then
+      invalid_arg
+      @@ Printf.sprintf
+           "intel_hex: record's checksum mismatched: expected 0x%X but got 0x%X"
+           expected_checksum checksum;
+
+    { kind; address; payload; checksum }
 end
 
 let to_raw record =
@@ -87,3 +120,20 @@ let to_string record =
   let buffer = Buffer.create 0xff in
   output_to_buffer record buffer;
   Buffer.contents buffer
+
+let of_string line =
+  let Raw.{ kind; address; payload; _ } = Raw.of_string line in
+
+  match kind with
+  | 0x00 -> Data (address, payload)
+  | 0x01 -> End_of_file
+  | 0x02 -> Extended_segment_address String.(get_uint16_be payload 0)
+  | 0x04 -> Extended_linear_address String.(get_uint16_be payload 0)
+  | 0x05 -> Start_linear_address String.(get_int32_be payload 0 |> Int32.to_int)
+  | 0x03 ->
+      Start_segment_address
+        {
+          cs = String.get_int16_be payload 0;
+          ip = String.get_int16_be payload 2;
+        }
+  | _ -> invalid_arg "intel_hex: illegal record type"

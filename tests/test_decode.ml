@@ -2,24 +2,28 @@ open Alcotest
 
 let test_record_from_record_string_rejects_missing_start_code () =
   check_raises "00000001FF"
-    Intel_hex.Parsing.(Error.Error Missing_start_code)
-    (fun () -> Intel_hex.Parsing.parse_record "00000001FF" |> ignore)
+    (Invalid_argument "intel_hex: missing record's start code")
+  @@ fun () -> Intel_hex.Record.of_string "00000001FF" |> ignore
 
 let test_record_from_record_string_rejects_non_hex_characters () =
   check_raises ":000000q1ff"
-    Intel_hex.Parsing.(Error.Error Invalid_hexadecimal)
-    (fun () -> Intel_hex.Parsing.parse_record ":000000q1ff" |> ignore)
+    (Invalid_argument "intel_hex: invalid hexadecimal record's body")
+  @@ fun () -> Intel_hex.Record.of_string ":000000q1ff" |> ignore
 
 let test_record_from_record_string_rejects_invalid_checksums () =
   check_raises ":0B0010006164647265737320676170FF"
-    Intel_hex.Parsing.(Error.Error (Checksum_mismatched (0xFF, 0xA7)))
-    (fun () ->
-      Intel_hex.Parsing.parse_record ":0B0010006164647265737320676170FF"
-      |> ignore);
+    (Invalid_argument
+       "intel_hex: record's checksum mismatched: expected 0xA7 but got 0xFF")
+    begin fun () ->
+      Intel_hex.Record.of_string ":0B0010006164647265737320676170FF" |> ignore
+    end;
 
   check_raises ":020000021200EB"
-    Intel_hex.Parsing.(Error.Error (Checksum_mismatched (0xEB, 0xEA)))
-    (fun () -> Intel_hex.Parsing.parse_record ":020000021200EB" |> ignore)
+    (Invalid_argument
+       "intel_hex: record's checksum mismatched: expected 0xEA but got 0xEB")
+    begin fun () ->
+      Intel_hex.Record.of_string ":020000021200EB" |> ignore
+    end
 
 let intel_hex_record = testable Intel_hex.Record.pp ( = )
 
@@ -46,7 +50,7 @@ let test_reader_processes_well_formed_ihex_object () =
   in
 
   check (list intel_hex_record) "IHEX object" expected
-    (Intel_hex.Parsing.parse_object ihex_text)
+    (Intel_hex.Object.of_string ihex_text)
 
 let () =
   run "Decode"

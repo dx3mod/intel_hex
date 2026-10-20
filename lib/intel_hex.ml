@@ -5,5 +5,4 @@
 
 module Record = Record
 module Object = Object
-module Parsing = Parsing
 module Memory = Memory
