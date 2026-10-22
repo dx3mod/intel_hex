@@ -21,7 +21,8 @@
  (depends
   (ocaml
    (>= 5.2))
-  hexen
+  (hexen
+   (>= 0.2))
   (alcotest :with-test))
  (tags
   (ihex intelhex embedded bytes hex)))

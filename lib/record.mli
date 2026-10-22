@@ -33,9 +33,9 @@ val to_string : t -> string
     (* - : string = ":00000001FF" *)
     ]} *)
 
-val output_to_buffer : t -> Buffer.t -> unit
-(** [output_to_buffer record buffer] encodes the [record] into an Intel HEX
-    string to the [buffer]. *)
+val to_buffer : Buffer.t -> t -> unit
+(** [to_buffer buffer record] encodes the [record] into an Intel HEX string to
+    the [buffer]. *)
 
 val is_eof : t -> bool
 (** [is_eof record] checks the [record] on [End_of_file] variant. *)

@@ -41,7 +41,7 @@ module Raw = struct
 
     { kind; address; payload; checksum }
 
-  let output_to_buffer { kind; address; payload; checksum } buffer =
+  let to_buffer buffer { kind; address; payload; checksum } =
     let bytes = Bytes.create (5 + String.length payload) in
 
     Bytes.set_uint8 bytes 0 String.(length payload);
@@ -51,7 +51,7 @@ module Raw = struct
     Bytes.set_uint8 bytes String.(length payload + 4) checksum;
 
     Buffer.add_char buffer ':';
-    Hexen.encode_to_buffer ~uppercase:true (Bytes.unsafe_to_string bytes) buffer
+    Hexen.encode_to_buffer ~uppercase:true buffer (Bytes.unsafe_to_string bytes)
 
   let of_string line =
     if line.[0] <> ':' then invalid_arg "intel_hex: missing record's start code";
@@ -113,11 +113,11 @@ let to_raw record =
 
       Raw.make ~kind:0x05 ~address:0 (Bytes.unsafe_to_string buf)
 
-let output_to_buffer record buffer = Raw.output_to_buffer (to_raw record) buffer
+let to_buffer buffer record = Raw.to_buffer buffer (to_raw record)
 
 let to_string record =
   let buffer = Buffer.create 0xff in
-  output_to_buffer record buffer;
+  to_buffer buffer record;
   Buffer.contents buffer
 
 let of_string line =

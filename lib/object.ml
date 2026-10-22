@@ -7,18 +7,18 @@ let pp ppf records =
        Record.pp)
     records
 
-let rec output_to_buffer records buffer =
+let rec to_buffer buffer records =
   match records with
   | [] -> ()
-  | record :: [] -> Record.output_to_buffer record buffer
+  | record :: [] -> Record.to_buffer buffer record
   | record :: records ->
-      Record.output_to_buffer record buffer;
+      Record.to_buffer buffer record;
       Buffer.add_char buffer '\n';
-      output_to_buffer records buffer
+      to_buffer buffer records
 
 let to_string records =
   let buffer = Buffer.create 0xff in
-  output_to_buffer records buffer;
+  to_buffer buffer records;
   Buffer.contents buffer
 
 let of_string source =

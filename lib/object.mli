@@ -16,9 +16,9 @@ val to_string : t -> string
 (** [to_string object] encodes the Intel HEX [object] into a new Intel HEX
     object string. *)
 
-val output_to_buffer : t -> Buffer.t -> unit
-(** [output_to_buffer object buffer] encodes the Intel HEX [object] into an
-    Intel HEX object string to the [buffer]. *)
+val to_buffer : Buffer.t -> t -> unit
+(** [to_buffer buffer object] encodes the Intel HEX [object] into an Intel HEX
+    object string to the [buffer]. *)
 
 val of_channel : in_channel -> t
 (** [of_channel ic] is similar to {!of_string}, but for input channels. *)
