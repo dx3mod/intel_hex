@@ -26,6 +26,14 @@ let pp fmt = function
 module Raw = struct
   type t = { kind : int; address : int; payload : string; checksum : int }
 
+  let calculate_checksum { kind; address; payload; _ } =
+    let payload_sum_bytes =
+      String.fold_left (fun sum ch -> int_of_char ch + sum) 0 payload
+    and address_sum_bytes = (address lsr 8) + (address land 0xFF) in
+
+    -(payload_sum_bytes + address_sum_bytes + String.length payload + kind)
+    land 0xFF
+
   let make ~kind ~address ?checksum payload =
     let checksum =
       match checksum with
