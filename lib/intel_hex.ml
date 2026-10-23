@@ -7,3 +7,4 @@
 module Record = Record
 module Object = Object
 module Memory = Memory
+module Parse_error = Parse_error

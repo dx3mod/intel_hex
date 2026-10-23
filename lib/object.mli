@@ -10,7 +10,7 @@ val of_string : string -> t
 
     @param object Correct Intel HEX object string.
 
-    @raise Invalid_argument If parsing fails. *)
+    @raise Parse_error.Error If parsing fails. *)
 
 val to_string : t -> string
 (** [to_string object] encodes the Intel HEX [object] into a new Intel HEX

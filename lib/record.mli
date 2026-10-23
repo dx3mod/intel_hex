@@ -22,7 +22,7 @@ val of_string : string -> t
     @param line
       Correct Intel HEX record line without a newline character at the end.
 
-    @raise Invalid_argument If parsing fails. *)
+    @raise Parse_error.Error If parsing fails. *)
 
 val to_string : t -> string
 (** [to_string record] encodes the [record] into a new Intel HEX string.

@@ -37,14 +37,8 @@ module Raw = struct
   let make ~kind ~address ?checksum payload =
     let checksum =
       match checksum with
-      | Some checksum -> checksum
-      | None ->
-          let payload_sum_bytes =
-            String.fold_left (fun sum ch -> int_of_char ch + sum) 0 payload
-          in
-
-          -(payload_sum_bytes + address + String.length payload + kind)
-          land 0xFF
+      | Some checksum -> checksum land 0xFF
+      | None -> calculate_checksum { kind; address; payload; checksum = 0 }
     in
 
     { kind; address; payload; checksum }
@@ -61,38 +55,38 @@ module Raw = struct
     Buffer.add_char buffer ':';
     Hexen.encode_to_buffer ~uppercase:true buffer (Bytes.unsafe_to_string bytes)
 
+  let input_raw_record bytes =
+    try
+      (* Get fields from cstruct buffer *)
+      let length = String.get_uint8 bytes 0 in
+      let address = String.get_uint16_be bytes 1 in
+      let kind = String.get_uint8 bytes 3 in
+      let payload = String.sub bytes 4 length in
+      let checksum = String.get_uint8 bytes (4 + length) in
+
+      { kind; address; payload; checksum }
+    with Invalid_argument _ -> raise @@ Parse_error.Error Too_small_source
+
   let of_string line =
-    if line.[0] <> ':' then invalid_arg "intel_hex: missing record's start code";
+    if line.[0] <> ':' then raise @@ Parse_error.Error Missing_start_character;
 
     let bytes =
       try Hexen.decode_substring line 1 (String.length line - 1)
       with Invalid_argument _ ->
-        invalid_arg "intel_hex: invalid hexadecimal record's body"
+        raise @@ Parse_error.Error Invalid_hexadecimal_body
     in
 
-    (* Get fields from cstruct buffer *)
-    let length = String.get_uint8 bytes 0 in
-    let address = String.get_uint16_be bytes 1 in
-    let kind = String.get_uint8 bytes 3 in
-    let payload = String.sub bytes 4 length in
+    let raw_record = input_raw_record bytes in
 
-    (* Verify checksum *)
-    let checksum = String.get_uint8 bytes (4 + length)
-    and expected_checksum =
-      let payload_sum_bytes =
-        String.fold_left (fun sum ch -> int_of_char ch + sum) 0 payload
-      in
+    let expected_checksum = calculate_checksum raw_record in
+    if raw_record.checksum <> expected_checksum then begin
+      raise
+      @@ Parse_error.Error
+           (Checksum_mismatched
+              { expected = expected_checksum; actual = raw_record.checksum })
+    end;
 
-      -(payload_sum_bytes + address + String.length payload + kind) land 0xFF
-    in
-
-    if checksum <> expected_checksum then
-      invalid_arg
-      @@ Printf.sprintf
-           "intel_hex: record's checksum mismatched: expected 0x%X but got 0x%X"
-           expected_checksum checksum;
-
-    { kind; address; payload; checksum }
+    raw_record
 end
 
 let to_raw record =
